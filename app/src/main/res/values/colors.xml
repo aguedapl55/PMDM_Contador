@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- https://coolors.co/023047-219ebc-8ecae6-ffb703-fb8500 -->
+    <!-- combinado con amarillo blues and yellows.png-->
+    <color name="bgElemTienda">#219ebc</color>
+    <color name="bgTienda">#8ecae6</color>
+    <color name="bgElemMain">#fb8500</color>
+    <color name="bgMain">#FCFF4B</color>
+    <color name="text">#023047</color>
+</resources>

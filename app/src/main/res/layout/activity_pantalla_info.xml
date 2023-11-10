@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PantallaInfo"
+    android:background="@color/bgTienda">
+
+    <Button
+        android:id="@+id/volver"
+        android:layout_width="125dp"
+        android:layout_height="75dp"
+        android:onClick="volver"
+        android:text="Volver"
+        android:textSize="25dp"
+        android:backgroundTint="@color/bgElemTienda"
+        android:layout_marginBottom="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/credNom"
+        android:layout_width="200dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="50dp"
+        android:text="@string/pcAutor"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textColor="@color/text"
+        android:textSize="25dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/pcCookieClicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/pcCookieClicker"
+        android:backgroundTint="@color/bgElemTienda"
+        android:layout_marginTop="25dp"
+        android:onClick="webCookieClicker"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/credNom" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:orientation="vertical"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/volver"
+        app:layout_constraintTop_toBottomOf="@id/pcCookieClicker">
+
+        <TextView
+            android:id="@android:id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pcInstrucciones"
+            android:textAlignment="center"
+            android:textColor="@color/text"
+            android:textSize="25dp" />
+
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="32dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginRight="32dp"
+            android:layout_weight="1"
+            android:background="@color/bgTienda"
+            android:drawSelectorOnTop="false" />
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
