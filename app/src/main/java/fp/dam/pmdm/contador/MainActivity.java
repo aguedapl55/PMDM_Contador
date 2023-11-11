@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //me he enterado hoy (viernes 10/11/2023) que no habia que hacer los datos persistentes
+        //dicho esto, me he complicado demasiado la vida haciendolo como para quitarlo, asi que aqui esta
         sharedPreferences = getSharedPreferences("datosSP", Context.MODE_PRIVATE);
 
         try {
@@ -44,19 +46,12 @@ public class MainActivity extends AppCompatActivity {
             increment = (BigInteger) extras.get("increment");
             costClick = (BigInteger) extras.get("costClick");
             costAutoC = (BigInteger) extras.get("costAutoC");
-        } catch (NullPointerException e) { //este try es porque, la primera vez que se entre al juego, va a ser null si o si
-            num = BigInteger.ZERO;
-            multiplier = BigInteger.ONE;
-            increment = BigInteger.ZERO;
-            costClick = costAutoC = BigInteger.valueOf(100); //la unica razon por la que se pasa es para que no se pierda el numero sos
-        }
-
-        if (num.compareTo(BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("num", "")))) < 0) {
-            num = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("num", "")));
-            multiplier = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("multiplier", "")));
-            increment = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("increment", "")));
-            costClick = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("costClick", "")));
-            costAutoC = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("costAutoC", "")));
+        } catch (NullPointerException e) {
+            num = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("num", "0")));
+            multiplier = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("multiplier", "1")));
+            increment = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("increment", "0")));
+            costClick = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("costClick", "100")));
+            costAutoC = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("costAutoC", "100")));
         }
 
         if (increment.compareTo(BigInteger.ZERO) > 0)
@@ -86,7 +81,8 @@ public class MainActivity extends AppCompatActivity {
         BigInteger reduc = num;
 
         int len = num.toString().length() - 1;
-        int comas = (len / 3); //cuenta cuantas comas hay en el numero, sirve para switch de miles, millones, etc.
+        int comas = (len / 3);
+        //cuenta cuantas comas hay en el numero, sirve para if de miles, millones, etc.
 
         if (comas == 0) {
         } else if (comas == 1) {
@@ -136,7 +132,8 @@ public class MainActivity extends AppCompatActivity {
     private void guardarDatos() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        //los meto en string para evitar que sea demasiado grande para guardar (aunque el unico que tiene riesgo de llegar a eso es el num tbh)
+        //los meto en string para evitar que sea demasiado grande para guardar
+            //(aunque el unico que tiene riesgo de llegar a eso es el num tbh)
         editor.putString("num", num.toString());
         editor.putString("multiplier", multiplier.toString());
         editor.putString("increment", increment.toString());
