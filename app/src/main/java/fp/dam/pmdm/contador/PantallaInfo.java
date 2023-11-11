@@ -27,7 +27,10 @@ public class PantallaInfo extends ListActivity implements AdapterView.OnItemClic
 
     public void crearInstrucciones() {
         List<zzInstrucciones> instr = Arrays.asList(
-            new zzInstrucciones("PRUEBA", R.drawable.coin)
+            new zzInstrucciones("En la pantalla 'jugar' puedes encontrar el contador y la moneda. Pulsa la moneda para subir la cantidad!", R.drawable.moneda_contador),
+            new zzInstrucciones("También puedes acceder a la tienda mediante el boton de abajo: ", R.drawable.tienda),
+            new zzInstrucciones("Allí encontrarás dos posibles mejoras.", R.drawable.tiendacompras),
+            new zzInstrucciones("Consigue todas las monedas que puedas! podrás ver tu progreso en opciones.", R.drawable.datos)
         );
         zzInstrAdapter adapter = new zzInstrAdapter(this, R.layout.zz_fila_listview, instr);
         setListAdapter(adapter);

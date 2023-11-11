@@ -24,8 +24,8 @@ public class zzInstrAdapter extends ArrayAdapter<zzInstrucciones> {
         zzInstrucciones instr = getItem(position);
         if (convertView == null)
             convertView = LayoutInflater.from(this.getContext()).inflate(R.layout.zz_fila_listview, parent, false);
-        ((TextView) convertView.findViewById(R.id.pcItemInstrucciones)).setText(instr.getPalabras());
-        ((ImageView) convertView.findViewById(R.id.pcItemFoto)).setImageResource(instr.getImagen());
+        ((TextView) convertView.findViewById(R.id.ItemTexto)).setText(instr.getPalabras());
+        ((ImageView) convertView.findViewById(R.id.ItemFoto)).setImageResource(instr.getImagen());
         return convertView;
     }
 }
