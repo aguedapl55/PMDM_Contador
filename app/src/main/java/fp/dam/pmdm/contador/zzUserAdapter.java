@@ -1,5 +1,6 @@
 package fp.dam.pmdm.contador;
 
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +13,10 @@ import java.util.List;
 
 public class zzUserAdapter extends RecyclerView.Adapter<zzUserAdapter.ViewHolder> {
 
-    List<String> modeList;
+    List<String[]> modeList;
 
-    public zzUserAdapter(List<String> userModeList) {
-        this.modeList = userModeList;
+    public zzUserAdapter(List<String[]> lista) {
+        modeList = lista;
     }
 
     @NonNull
@@ -27,7 +28,9 @@ public class zzUserAdapter extends RecyclerView.Adapter<zzUserAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.nombre.setText(modeList.get(position));
+        String[] array = modeList.get(position);
+        holder.nombre.setText(array[0]);
+        holder.score.setText(array[1]);
     }
 
     @Override
@@ -37,10 +40,12 @@ public class zzUserAdapter extends RecyclerView.Adapter<zzUserAdapter.ViewHolder
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView nombre;
+        private final TextView score;
 
         public ViewHolder(View v) {
             super (v);
-            nombre = (TextView) v.findViewById(R.id.filaTexto);
+            nombre = (TextView) v.findViewById(R.id.filaUser);
+            score = (TextView) v.findViewById(R.id.filaScore);
         }
     }
 }

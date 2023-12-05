@@ -9,19 +9,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class PantallaOpciones extends AppCompatActivity {
 
     private TextView idioma;
-    SharedPreferences sharedPreferences;
+    DB_Handler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,20 +33,35 @@ public class PantallaOpciones extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        sharedPreferences = getApplicationContext().getSharedPreferences("datosSP", Context.MODE_PRIVATE);
-
         RecyclerView rv = (RecyclerView) findViewById(R.id.poRecyclerView);
         rv.hasFixedSize();
         rv.setLayoutManager(new LinearLayoutManager(this));
-        List<String> l = Arrays.asList(
-                "Número de monedas: " + sharedPreferences.getString("num", ""),
-                "Billetes (monedas/click): " + sharedPreferences.getString("multiplier", ""),
-                "AutoClickers (clicks/segundo): " + sharedPreferences.getString("increment", ""),
-                "",
-                "Coste de los billetes: " + sharedPreferences.getString("costClick", ""),
-                "Coste de los Autoclickers: " + sharedPreferences.getString("costAutoC", "")
+
+        db = new DB_Handler(this);
+        String[] columnas = {
+                DB_Handler.datos_username,
+                DB_Handler.datos_score
+        };
+        Cursor cursor = db.getReadableDatabase().query(
+                DB_Handler.TABLE_NAME,
+                columnas,
+                null,
+                null,
+                null,
+                null,
+                null
         );
-        rv.setAdapter(new zzUserAdapter(l));
+
+        List<String[]> lista = new ArrayList<>();
+        String[] resul = {"usuario", "puntuación"};
+        lista.add(resul);
+        while (!cursor.isAfterLast()) {
+            resul = new String[] {
+                    cursor.getString(0),
+                    cursor.getString(1)};
+            lista.add(resul);
+        }
+        rv.setAdapter(new zzUserAdapter(lista));
     }
 
     @Override

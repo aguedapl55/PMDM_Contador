@@ -23,9 +23,15 @@
     <!-- PANTALLA OPCIONES-->
     <string name="poOtros">Otros recursos:</string>
     <string name="poIdioma">Toolbar: idioma (trabajo en proceso)</string>
-        <string name="langEn">Inglés</string>
-        <string name="langEs">Español</string>
+    <string name="langEn">Inglés</string>
+    <string name="langEs">Español</string>
     <string name="poBorrar">BORRAR</string>
     <string name="poDatos">Datos almacenados</string>
+
+    <!-- PANTALLA LOGIN -->
+    <string name="plIniciarSesion">Iniciar sesión</string>
+    <string name="plRegistrarse">Registrarse</string>
+    <string name="plUsuario">Usuario</string>
+    <string name="plContraseña">Contraseña</string>
 
 </resources>

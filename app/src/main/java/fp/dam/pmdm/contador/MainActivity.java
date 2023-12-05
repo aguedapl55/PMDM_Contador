@@ -1,14 +1,12 @@
 package fp.dam.pmdm.contador;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.datastore.preferences.core.Preferences;
-import androidx.datastore.preferences.core.PreferencesKeys;
-import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
-import androidx.datastore.rxjava3.RxDataStore;
 
-import android.content.Context;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,8 +26,13 @@ public class MainActivity extends AppCompatActivity {
 
     TextView contador;
     BigInteger num, multiplier, increment, costClick, costAutoC;
+    String username, password;
     ImageView coin_image;
     SharedPreferences sharedPreferences;
+
+    private ArrayList<zzDataStorage> dataArrayL;
+    private DB_Handler db;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,25 +41,49 @@ public class MainActivity extends AppCompatActivity {
 
         //me he enterado hoy (viernes 10/11/2023) que no habia que hacer los datos persistentes
         //dicho esto, me he complicado demasiado la vida haciendolo como para quitarlo, asi que aqui esta
-        sharedPreferences = getSharedPreferences("datosSP", Context.MODE_PRIVATE);
+//      sharedPreferences = getSharedPreferences("datosSP", Context.MODE_PRIVATE);
 
-        try {
+        db = new DB_Handler(getBaseContext());
+
+        try { // maybe cambiar esto al catch?
             Bundle extras = getIntent().getExtras();
-            num = (BigInteger) extras.get("num");
-            multiplier = (BigInteger) extras.get("multiplier");
-            increment = (BigInteger) extras.get("increment");
-            costClick = (BigInteger) extras.get("costClick");
-            costAutoC = (BigInteger) extras.get("costAutoC");
-        } catch (NullPointerException e) {
-            num = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("num", "0")));
-            multiplier = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("multiplier", "1")));
-            increment = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("increment", "0")));
-            costClick = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("costClick", "100")));
-            costAutoC = BigInteger.valueOf(Long.parseLong(sharedPreferences.getString("costAutoC", "100")));
+            username = extras.getString("username");
+            password = extras.getString("password");
+            try {
+                num = (BigInteger) extras.get("num");
+                multiplier = (BigInteger) extras.get("multiplier");
+                increment = (BigInteger) extras.get("increment");
+                costClick = (BigInteger) extras.get("costClick");
+                costAutoC = (BigInteger) extras.get("costAutoC");
+            } catch (NullPointerException e) {
+                String whereClause =  DB_Handler.datos_username + " = ?";
+                String[] whereData = {
+                    username
+                };
+
+                Cursor cursor = db.getReadableDatabase().query(
+                        DB_Handler.TABLE_NAME,
+                        null, //esto devuelve todas las columnas
+                        whereClause,
+                        whereData,
+                        null,
+                        null,
+                        null
+                );
+
+                num = BigInteger.valueOf(Long.parseLong(cursor.getString(2)));
+                multiplier = BigInteger.valueOf(Long.parseLong(cursor.getString(3)));
+                increment = BigInteger.valueOf(Long.parseLong(cursor.getString(4)));
+                costClick = BigInteger.valueOf(Long.parseLong(cursor.getString(5)));
+                costAutoC = BigInteger.valueOf(Long.parseLong(cursor.getString(6)));
+            }
+        } catch (Exception e) {
+            num = increment = BigInteger.ZERO;
+            multiplier = BigInteger.ONE;
+            costClick = costAutoC = BigInteger.valueOf(100);
         }
 
-        if (increment.compareTo(BigInteger.ZERO) > 0)
-            generarHiloAC(increment);
+        generarHiloAC(increment);
 
         contador = findViewById(R.id.textoContador);
         contador.setText(BigInteger.ZERO.add(num).toString());
@@ -111,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void goto_Tienda(View v) {
         Intent i = new Intent(this, Tienda.class);
+        i.putExtra("username", username);
+        i.putExtra("password", password);
         i.putExtra("num", num);
         i.putExtra("multiplier", multiplier);
         i.putExtra("increment", increment);
@@ -123,24 +153,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void volver(View v) {
-        guardarDatos();
-        Intent i = new Intent(this, PantallaInicio.class);
-        startActivity(i);
-        finish();
+        if (guardarDatos() == 1) {
+            Intent i = new Intent(this, PantallaInicio.class);
+            startActivity(i);
+            finish();
+        } else {
+            Toast toast = Toast.makeText(this, "Hubo un error al guardar", Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
-    private void guardarDatos() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+    private int guardarDatos() {
+        BigInteger score = num
+                .add((multiplier.add(BigInteger.valueOf(-1))).multiply(BigInteger.valueOf(50)))
+                    //(multiplier-1)*50 //multiplier empieza en 1
+                .add(increment.multiply(BigInteger.valueOf(50)));
+                    //increment*50
 
-        //los meto en string para evitar que sea demasiado grande para guardar
-            //(aunque el unico que tiene riesgo de llegar a eso es el num tbh)
-        editor.putString("num", num.toString());
-        editor.putString("multiplier", multiplier.toString());
-        editor.putString("increment", increment.toString());
-        editor.putString("costClick", costClick.toString());
-        editor.putString("costAutoC", costAutoC.toString());
+        SQLiteDatabase sqlDB = db.getWritableDatabase();
 
-        editor.commit();
+        ContentValues values = new ContentValues();
+        //values.put(DB_Handler.datos_username, username);
+        //values.put(DB_Handler.datos_password, password);
+        values.put(DB_Handler.datos_num, num.toString());
+        values.put(DB_Handler.datos_mult, multiplier.toString());
+        values.put(DB_Handler.datos_inc, increment.toString());
+        values.put(DB_Handler.datos_cClick, costClick.toString());
+        values.put(DB_Handler.datos_cAutoC, costAutoC.toString());
+        values.put(DB_Handler.datos_score, score.toString());
+
+        String whereClause = DB_Handler.datos_username + " LIKE ?";
+        String[] whereData = {username};
+
+        int count = sqlDB.update(
+                DB_Handler.TABLE_NAME,
+                values,
+                whereClause,
+                whereData
+        );
+
+        return count;
     }
 
 
