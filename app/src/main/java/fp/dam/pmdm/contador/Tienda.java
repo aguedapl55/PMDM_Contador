@@ -5,6 +5,7 @@ import static fp.dam.pmdm.contador.MainActivity.numSize;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,8 +20,10 @@ import java.util.concurrent.Executors;
 public class Tienda extends AppCompatActivity {
 
     BigInteger num, multiplier, increment, costClick, costAutoC;
+    String username, password;
     TextView contador;
     Button botonClick, botonAutoC;
+    DB_Handler db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,15 +32,33 @@ public class Tienda extends AppCompatActivity {
         botonClick = findViewById(R.id.dollarUGButton);
         botonAutoC = findViewById(R.id.autoclickUGButton);
 
-        Bundle extras = getIntent().getExtras();
-        num = (BigInteger) extras.get("num");
-        multiplier = (BigInteger) extras.get("multiplier");
-        increment = (BigInteger) extras.get("increment");
-        costClick = (BigInteger) extras.get("costClick");
-        costAutoC = (BigInteger) extras.get("costAutoC");
+        db = new DB_Handler(getBaseContext());
 
-        if (increment.compareTo(BigInteger.ZERO) > 0)
-            generarHiloAC(increment);
+        Bundle extras = getIntent().getExtras();
+        username = extras.getString("username");
+        password = extras.getString("password");
+
+        try {
+            String[] clause = {username};
+            Cursor cursor = db.getReadableDatabase().rawQuery(
+                    "SELECT * FROM DatosJuego " +
+                            "WHERE datos_username = ?",
+                    clause
+            );
+            if (cursor!= null && cursor.getCount() > 0 && cursor.moveToFirst()){
+                num = BigInteger.valueOf(Long.parseLong(cursor.getString(cursor.getColumnIndex(DB_Handler.datos_num))));
+                multiplier = BigInteger.valueOf(Long.parseLong(cursor.getString(3)));
+                increment = BigInteger.valueOf(Long.parseLong(cursor.getString(4)));
+                costClick = BigInteger.valueOf(Long.parseLong(cursor.getString(5)));
+                costAutoC = BigInteger.valueOf(Long.parseLong(cursor.getString(6)));
+            }
+        } catch (Exception e) {
+            num = (BigInteger) extras.get("num");
+            multiplier = (BigInteger) extras.get("multiplier");
+            increment = (BigInteger) extras.get("increment");
+            costClick = (BigInteger) extras.get("costClick");
+
+        }
 
         contador = findViewById(R.id.textoContador);
         contador.setText(BigInteger.ZERO.add(num).toString());
@@ -88,9 +109,10 @@ public class Tienda extends AppCompatActivity {
         });
     }
 
-    // INTENTS ////////////////////////////////////////////////////////////////////////////////////
+    // INTENTS Y DATOS ////////////////////////////////////////////////////////////////////////////
 
     public void volver(View v) {
+        guardarDatos();
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra("num", num);
         i.putExtra("multiplier", multiplier);
@@ -99,5 +121,42 @@ public class Tienda extends AppCompatActivity {
         i.putExtra("costAutoC", costAutoC);
         startActivity(i);
         finish();
+    }
+
+    public void guardarDatos() {
+        BigInteger score = num
+                .add((multiplier.add(BigInteger.valueOf(-1))).multiply(BigInteger.valueOf(50)))
+                //(multiplier-1)*50 //multiplier empieza en 1
+                .add(increment.multiply(BigInteger.valueOf(50)));
+        //increment*50
+
+        String[] datos = {
+                username,
+                password,
+                "" + num,
+                "" + multiplier,
+                "" + increment,
+                "" + costClick,
+                "" + costAutoC,
+                "" + score,
+                username
+        };
+
+        Cursor cursor = db.getReadableDatabase().rawQuery(
+                "UPDATE DatosJuego " +
+                        "SET datos_username = ?, " +
+                        "datos_password = ?, " +
+                        "datos_num = ?, " +
+                        "datos_mult = ?, " +
+                        "datos_inc = ?, " +
+                        "datos_cClick = ?, " +
+                        "datos_cAutoC = ?, " +
+                        "datos_score = ?" +
+                        "WHERE datos_username = ?",
+                datos
+        );
+
+        cursor.moveToFirst();
+        cursor.close();
     }
 }

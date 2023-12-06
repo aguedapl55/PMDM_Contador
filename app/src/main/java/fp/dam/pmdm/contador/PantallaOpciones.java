@@ -38,20 +38,11 @@ public class PantallaOpciones extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
 
         db = new DB_Handler(this);
-        String[] columnas = {
-                DB_Handler.datos_username,
-                DB_Handler.datos_score
-        };
-        Cursor cursor = db.getReadableDatabase().query(
-                DB_Handler.TABLE_NAME,
-                columnas,
-                null,
-                null,
-                null,
-                null,
+        Cursor cursor = db.getReadableDatabase().rawQuery(
+                "SELECT datos_username, datos_score FROM DatosJuego",
                 null
         );
-
+        cursor.moveToFirst();
         List<String[]> lista = new ArrayList<>();
         String[] resul = {"usuario", "puntuación"};
         lista.add(resul);
@@ -60,6 +51,7 @@ public class PantallaOpciones extends AppCompatActivity {
                     cursor.getString(0),
                     cursor.getString(1)};
             lista.add(resul);
+            cursor.moveToNext();
         }
         rv.setAdapter(new zzUserAdapter(lista));
     }

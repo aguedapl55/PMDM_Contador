@@ -39,54 +39,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //me he enterado hoy (viernes 10/11/2023) que no habia que hacer los datos persistentes
-        //dicho esto, me he complicado demasiado la vida haciendolo como para quitarlo, asi que aqui esta
-//      sharedPreferences = getSharedPreferences("datosSP", Context.MODE_PRIVATE);
-
         db = new DB_Handler(getBaseContext());
 
-        try { // maybe cambiar esto al catch?
-            Bundle extras = getIntent().getExtras();
-            username = extras.getString("username");
-            password = extras.getString("password");
-            try {
-                num = (BigInteger) extras.get("num");
-                multiplier = (BigInteger) extras.get("multiplier");
-                increment = (BigInteger) extras.get("increment");
-                costClick = (BigInteger) extras.get("costClick");
-                costAutoC = (BigInteger) extras.get("costAutoC");
-            } catch (NullPointerException e) {
-                String whereClause =  DB_Handler.datos_username + " = ?";
-                String[] whereData = {
-                    username
-                };
+        Bundle extras = getIntent().getExtras();
+        username = extras.getString("username");
+        password = extras.getString("password");
 
-                Cursor cursor = db.getReadableDatabase().query(
-                        DB_Handler.TABLE_NAME,
-                        null, //esto devuelve todas las columnas
-                        whereClause,
-                        whereData,
-                        null,
-                        null,
-                        null
-                );
-
-                num = BigInteger.valueOf(Long.parseLong(cursor.getString(2)));
+        try {
+            String[] clause = {username};
+            Cursor cursor = db.getReadableDatabase().rawQuery(
+                    "SELECT * FROM DatosJuego " +
+                            "WHERE datos_username = ?",
+                    clause
+            );
+            if (cursor!= null && cursor.getCount() > 0 && cursor.moveToFirst()){
+                num = BigInteger.valueOf(Long.parseLong(cursor.getString(cursor.getColumnIndex(DB_Handler.datos_num))));
                 multiplier = BigInteger.valueOf(Long.parseLong(cursor.getString(3)));
                 increment = BigInteger.valueOf(Long.parseLong(cursor.getString(4)));
                 costClick = BigInteger.valueOf(Long.parseLong(cursor.getString(5)));
                 costAutoC = BigInteger.valueOf(Long.parseLong(cursor.getString(6)));
             }
         } catch (Exception e) {
-            num = increment = BigInteger.ZERO;
-            multiplier = BigInteger.ONE;
-            costClick = costAutoC = BigInteger.valueOf(100);
+            num = (BigInteger) extras.get("num");
+            multiplier = (BigInteger) extras.get("multiplier");
+            increment = (BigInteger) extras.get("increment");
+            costClick = (BigInteger) extras.get("costClick");
+
         }
 
         generarHiloAC(increment);
-
         contador = findViewById(R.id.textoContador);
-        contador.setText(BigInteger.ZERO.add(num).toString());
+        contador.setText("" + num);
         coin_image = findViewById(R.id.moneda);
     }
 
@@ -135,67 +118,6 @@ public class MainActivity extends AppCompatActivity {
         return ""+reduc+quant;
     }
 
-    // INTENTS Y DATOS ////////////////////////////////////////////////////////////////////////////
-
-    public void goto_Tienda(View v) {
-        Intent i = new Intent(this, Tienda.class);
-        i.putExtra("username", username);
-        i.putExtra("password", password);
-        i.putExtra("num", num);
-        i.putExtra("multiplier", multiplier);
-        i.putExtra("increment", increment);
-        try {
-            i.putExtra("costClick", costClick);
-            i.putExtra("costAutoC", costAutoC);
-        } catch (NullPointerException e) {}
-        startActivity(i);
-        finish();
-    }
-
-    public void volver(View v) {
-        if (guardarDatos() == 1) {
-            Intent i = new Intent(this, PantallaInicio.class);
-            startActivity(i);
-            finish();
-        } else {
-            Toast toast = Toast.makeText(this, "Hubo un error al guardar", Toast.LENGTH_SHORT);
-            toast.show();
-        }
-    }
-
-    private int guardarDatos() {
-        BigInteger score = num
-                .add((multiplier.add(BigInteger.valueOf(-1))).multiply(BigInteger.valueOf(50)))
-                    //(multiplier-1)*50 //multiplier empieza en 1
-                .add(increment.multiply(BigInteger.valueOf(50)));
-                    //increment*50
-
-        SQLiteDatabase sqlDB = db.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        //values.put(DB_Handler.datos_username, username);
-        //values.put(DB_Handler.datos_password, password);
-        values.put(DB_Handler.datos_num, num.toString());
-        values.put(DB_Handler.datos_mult, multiplier.toString());
-        values.put(DB_Handler.datos_inc, increment.toString());
-        values.put(DB_Handler.datos_cClick, costClick.toString());
-        values.put(DB_Handler.datos_cAutoC, costAutoC.toString());
-        values.put(DB_Handler.datos_score, score.toString());
-
-        String whereClause = DB_Handler.datos_username + " LIKE ?";
-        String[] whereData = {username};
-
-        int count = sqlDB.update(
-                DB_Handler.TABLE_NAME,
-                values,
-                whereClause,
-                whereData
-        );
-
-        return count;
-    }
-
-
     public void generarHiloAC(BigInteger i) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -216,6 +138,68 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // INTENTS Y DATOS ////////////////////////////////////////////////////////////////////////////
+
+    public void goto_Tienda(View v) {
+        guardarDatos();
+        Intent i = new Intent(this, Tienda.class);
+        i.putExtra("username", username);
+        i.putExtra("password", password);
+        i.putExtra("num", num);
+        i.putExtra("multiplier", multiplier);
+        i.putExtra("increment", increment);
+        try {
+            i.putExtra("costClick", costClick);
+            i.putExtra("costAutoC", costAutoC);
+        } catch (NullPointerException e) {}
+        startActivity(i);
+        finish();
+    }
+
+    public void volver(View v) {
+        guardarDatos();
+        Intent i = new Intent(this, PantallaInicio.class);
+        startActivity(i);
+        finish();
+    }
+
+    public void guardarDatos() {
+        BigInteger score = num
+                .add((multiplier.add(BigInteger.valueOf(-1))).multiply(BigInteger.valueOf(50)))
+                    //(multiplier-1)*50 //multiplier empieza en 1
+                .add(increment.multiply(BigInteger.valueOf(50)));
+                    //increment*50
+
+        String[] datos = {
+                username,
+                password,
+                "" + num,
+                "" + multiplier,
+                "" + increment,
+                "" + costClick,
+                "" + costAutoC,
+                "" + score,
+                "" + username
+        };
+
+        Cursor cursor = db.getReadableDatabase().rawQuery(
+                "UPDATE DatosJuego " +
+                    "SET datos_username = ?, " +
+                        "datos_password = ?, " +
+                        "datos_num = ?, " +
+                        "datos_mult = ?, " +
+                        "datos_inc = ?, " +
+                        "datos_cClick = ?, " +
+                        "datos_cAutoC = ?, " +
+                        "datos_score = ?" +
+                    "WHERE datos_username = ?",
+                datos
+        );
+
+        cursor.moveToFirst();
+        cursor.close();
     }
 
 }

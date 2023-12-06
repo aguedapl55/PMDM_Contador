@@ -7,9 +7,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class PantallaRegistro extends AppCompatActivity {
@@ -21,7 +21,6 @@ public class PantallaRegistro extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pantalla_registro);
-        username = password = confpassword = "";
         db = new DB_Handler(getBaseContext());
     }
 
@@ -56,36 +55,32 @@ public class PantallaRegistro extends AppCompatActivity {
     }
 
     private boolean usuarioExiste() {
-        String[] columnas = {
-                DB_Handler.datos_username
-        };
-        String whereClause =  DB_Handler.datos_username + " = ?";
-        String[] whereData = {
-                username
-        };
-
-        Cursor cursor = db.getReadableDatabase().query(
-                DB_Handler.TABLE_NAME,
-                columnas,
-                whereClause,
-                whereData,
-                null,
-                null,
-                null
+        TextView textview = findViewById(R.id.prEdtUsuario);
+        username = textview.getText().toString();
+        String[] clause = {username};
+        Cursor cursor = db.getReadableDatabase().rawQuery(
+                "SELECT " + DB_Handler.datos_username + " FROM " + DB_Handler.TABLE_NAME +
+                        " WHERE " + DB_Handler.datos_username + " = ?",
+                clause
         );
 
-        if (cursor.getCount() == 0) return false; //usuario NO existe
-        else return true; //usuario existe
+        cursor.moveToFirst();
+
+        if (cursor.getCount() == 1 && cursor.getString(0).equals(username))
+            return true; //usuario SI existe
+        return false; //usuario NO existe
 
     }
 
     public void crearCuenta() {
+        TextView textview = findViewById(R.id.prEdtUsuario);
+        username = textview.getText().toString();
+        textview = findViewById(R.id.prEdtContraseña);
+        password = textview.getText().toString();
+
         SQLiteDatabase sqlDB = db.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-
-        String s = "user = " + username + " ; pass = " + password;
-        Log.wtf(null, s);
 
         values.put(DB_Handler.datos_username, username);
         values.put(DB_Handler.datos_password, password);
@@ -94,6 +89,7 @@ public class PantallaRegistro extends AppCompatActivity {
         values.put(DB_Handler.datos_inc, "0");
         values.put(DB_Handler.datos_cClick, "100");
         values.put(DB_Handler.datos_cAutoC, "100");
+        values.put(DB_Handler.datos_score, "0");
 
         sqlDB.insert(DB_Handler.TABLE_NAME, null, values);
 

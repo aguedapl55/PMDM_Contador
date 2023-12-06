@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -38,29 +37,16 @@ public class PantallaLogin extends AppCompatActivity {
     }
 
     private boolean datosCorrectos() {
-        String[] columnas = {
-                DB_Handler.datos_password
-        };
-        String whereClause =  DB_Handler.datos_username + " = ?";
-        String[] whereData = {
-                username
-        };
-
-        Cursor cursor = db.getReadableDatabase().query(
-                DB_Handler.TABLE_NAME,
-                columnas,
-                whereClause,
-                whereData,
-                null,
-                null,
-                null
+        String[] clause = {username};
+        Cursor cursor = db.getReadableDatabase().rawQuery(
+                "SELECT datos_password FROM DatosJuego " +
+                        "WHERE datos_username = ?",
+                clause
         );
-        String s = "" + cursor.getCount();
-        Log.wtf(null, "" + s);
-        //if (cursor.getCount() == 1 && cursor.getString(1).equals(password)) {
-        //    return true; //los datos son correctos
-        //}
-        return false; //los datos NO son correctos
+        cursor.moveToFirst();
+        if (cursor.getCount() == 1 && (cursor.getString(0)).equals(password))
+            return true;
+        return false;
     }
 
     public void volver(View v) {
